@@ -90,7 +90,7 @@ void testApp::setup(){
     
     mixer.setInputBusCount(2);
     mixer.setInputVolume(0.0, 0);
-    mixer.setInputVolume(1.0, 1);
+    mixer.setInputVolume(0.2, 1);
     
     player.connectTo(lpf).connectTo(tap).connectTo(mixer, 0);
     sampler.connectTo(mixer, 1);
@@ -129,7 +129,7 @@ void testApp::update(){
     if ( velGraphs[PDMethod].getLast() < threshold ) {
         noteRun++;
         bAmRecording = true;
-
+        currentNote.analysisFrames.push_back(medianGraphs[PDMethod].getLast());
     }
     else  {
         // if the vel is above the thresh then check if the current run is longer than the min duration. If so save the note.  Regardless, set the run count to zero.
@@ -146,13 +146,15 @@ void testApp::update(){
             
             currentNote.playhead = 0;
             currentNote.bPlaying = true;
+            currentNote.bWasPlaying = false;
+            currentNote.mostCommonPitch = findMostCommonPitch(currentNote);
             notes.push_back(currentNote);
             
-            sampler.midiNoteOn(medianGraphs[PDMethod].valHistory[segment.start], 127);
 //            cout << "note recorded - min duration = " << minDuration << endl << endl;
             
         }
         
+        currentNote.analysisFrames.clear();
         noteRun = 0;
     }
 
@@ -174,8 +176,8 @@ void testApp::update(){
 void testApp::draw(){
 
 
-        ofSetColor(graphColors[PDMethod]);
-        ofDrawBitmapString(methods[PDMethod], ofGetWidth() / 7 * (PDMethod+1), 50);
+        ofSetColor(255, 10, 10);
+        ofDrawBitmapString(methods[PDMethod], ofGetWidth() - 100, 50);
         
         ofPushMatrix();
         ofTranslate(0, 100);
@@ -253,21 +255,33 @@ void testApp::audioIn(float * input, int bufferSize, int nChannels){
     if (bAmRecording){
         for (int i = 0; i < samples.size(); i++){
             currentNote.samples.push_back(samples[i]);
+            
         }
     } else  {
         currentNote.samples.clear();
+
     }
     
 }
 
 void testApp::audioOut(float * output, int bufferSize, int nChannels){
     
-    
     for (int j = 0; j < bufferSize; j++){
         output[j] = 0;
     }
     
     for (int i = 0; i < notes.size(); i++){
+        //play sampler
+        if ( !notes[i].bWasPlaying && notes[i].bPlaying ) {
+            sampler.midiNoteOn(notes[i].mostCommonPitch, 127);
+        }
+        else if ( notes[i].bWasPlaying && !notes[i].bPlaying ) {
+            sampler.midiNoteOff(notes[i].mostCommonPitch, 127);
+        }
+
+        notes[i].bWasPlaying = notes[i].bPlaying;
+        
+        //play audio
         if (notes[i].bPlaying == true && (notes[i].playhead + bufferSize) < notes[i].samples.size()){
             
             int playhead = notes[i].playhead;
@@ -281,9 +295,33 @@ void testApp::audioOut(float * output, int bufferSize, int nChannels){
         }
         
     }
+    
 }
 
-
+float testApp::findMostCommonPitch(audioNote note){
+    
+    vector < int > notes;
+    for (int i = 0; i < note.analysisFrames.size(); i++){
+        float freq = note.analysisFrames[i];
+        
+        if (freq > 0){
+            int note = freq; //freq2midi(freq);
+            if (note > 0 && note < 150) notes.push_back(note);
+        }
+    }
+    std::vector<int> histogram(150,0);
+    for( int i=0; i<notes.size(); ++i )
+        ++histogram[ notes[i] ];
+    int maxElement =std::max_element( histogram.begin(), histogram.end() )  - histogram.begin();
+    int maxCount =histogram[maxElement];
+    float pct = (float)maxCount/ (float)notes.size();
+    
+    return maxElement;
+//    mostCommonNote = maxElement;
+//    mostCommonNotePct = pct;
+    //cout << maxElement << " " << pct << endl;
+    
+}
 
 void testApp::setupGUI(){
     //init params

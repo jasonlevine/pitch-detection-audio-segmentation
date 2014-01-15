@@ -20,7 +20,10 @@ struct marker {
 struct audioNote {
     
     bool bPlaying;
+    bool bWasPlaying;
     vector < float > samples;
+    vector < float > analysisFrames;
+    float mostCommonPitch;
     int playhead;
 };
 
@@ -32,6 +35,8 @@ public:
     void update();
     void draw();
     void exit();
+    
+    float findMostCommonPitch(audioNote note);
     
     void setupGUI();
     void guiEvent(ofxUIEventArgs &e);
