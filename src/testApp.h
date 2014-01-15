@@ -64,15 +64,16 @@ public:
     vector < audioNote > notes;
 
     
-    
-    int graphWidth;
-    int graphMax;
+    float graphWidth;
+    float graphMax;
+    float graphHeight;
     
     bool startFound;
     int currentStart;
     vector<marker> markers;
     bool drawMarkers;
     
+    scrollingGraph runs;
     
     // recording
     bool bAmRecording;
@@ -89,7 +90,7 @@ public:
     
     float threshold;
     float minDuration, maxDuration;
-    
+    float noteRun;
     
     //UI
     ofxUICanvas * gui;
@@ -98,5 +99,14 @@ public:
     bool notePlaying;
     
     bool belowThresh;
+    
+    int PDMethod;
+    
+    uint_t samplerate;
+    uint_t win_s; // window size
+    uint_t hop_s;  // hop size
+    
+    // create some vectors
+    fvec_t * in; // input buffer
     
 };

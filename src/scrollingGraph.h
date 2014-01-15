@@ -11,6 +11,7 @@ class scrollingGraph {
 public:
     void setup(int _size, float init, float min, float max);
     void addValue(float val);
+    float getLast() { return valHistory[valHistory.size()-1]; }
     void draw(float height);
     
     vector<float> valHistory;
