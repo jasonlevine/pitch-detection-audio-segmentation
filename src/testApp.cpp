@@ -61,10 +61,19 @@ void testApp::setup(){
     }
     
     runs.setup(graphWidth, 0, 0, 1);
+    
+    threshold = 0.1;
+    minDuration = 25;
+    maxDuration = 50;
+    drawMarkers = true;
+    
+    bAmRecording = false;
 
-    drawPitch.assign(numPDs, false);
-    drawPitch[0] = true;
-    drawMedian.assign(numPDs, false);
+//    drawPitch.assign(numPDs, false);
+//    drawPitch[0] = true;
+//    drawMedian.assign(numPDs, false);
+    
+    setupGUI();
     
     //AU
     
@@ -75,26 +84,22 @@ void testApp::setup(){
     
     tap.setBufferLength(1024);
     
-    mixer.setInputBusCount(1);
-    player.connectTo(lpf).connectTo(tap).connectTo(mixer, 0).connectTo(output);
-
+    sampler = ofxAudioUnitSampler('aumu', 'dls ', 'appl');
+    sampler.setBank(0, 0);
+    sampler.setProgram(0);
     
-    mixer.setOutputVolume(0.00);
+    mixer.setInputBusCount(2);
+    mixer.setInputVolume(0.0, 0);
+    mixer.setInputVolume(1.0, 1);
+    
+    player.connectTo(lpf).connectTo(tap).connectTo(mixer, 0);
+    sampler.connectTo(mixer, 1);
+    mixer.connectTo(output);
+    
     output.start();
-    
     player.loop();
     
     samples.assign(hop_s, 0.0);
-    
-    threshold = 0.1;
-    minDuration = 25;
-    maxDuration = 50;
-    drawMarkers = true;
-    
-    bAmRecording = false;
-    
-    
-    setupGUI();
     ss.setup(this, 1, 1, samplerate, hop_s, 4);
 }
 
@@ -142,6 +147,8 @@ void testApp::update(){
             currentNote.playhead = 0;
             currentNote.bPlaying = true;
             notes.push_back(currentNote);
+            
+            sampler.midiNoteOn(medianGraphs[PDMethod].valHistory[segment.start], 127);
 //            cout << "note recorded - min duration = " << minDuration << endl << endl;
             
         }
@@ -173,8 +180,8 @@ void testApp::draw(){
         ofPushMatrix();
         ofTranslate(0, 100);
         medianGraphs[PDMethod].draw(graphHeight);
-        ofSetColor(25);
-        runs.draw(graphHeight);
+//        ofSetColor(25);
+//        runs.draw(graphHeight);
     
         if (drawMarkers) {
             
@@ -199,7 +206,7 @@ void testApp::draw(){
             ofSetColor(0,0,0,127);
             for (int j = 0; j < velGraphs[PDMethod].valHistory.size(); j++) {
                 if ( velGraphs[PDMethod].valHistory[j] > threshold ) {
-                    ofLine(j * 2, 0, j * 2, threshLineHeight);
+                    ofLine(j * 2, -threshLineHeight, j * 2, threshLineHeight);
                 }
             }
             
@@ -362,7 +369,7 @@ void testApp::mouseDragged(int x, int y, int button){
 
 //--------------------------------------------------------------
 void testApp::mousePressed(int x, int y, int button){
-
+    sampler.midiNoteOn(medianGraphs[PDMethod].valHistory[0], 127);
 }
 
 //--------------------------------------------------------------

@@ -70,7 +70,7 @@ public:
     //graphs
     vector<smoother> smoothers;
     vector<scrollingGraph> pitchGraphs, medianGraphs, velGraphs;
-    vector<bool> drawPitch, drawMedian;
+//    vector<bool> drawPitch, drawMedian;
     vector<ofColor> graphColors;
     float graphWidth;
     float graphMax;
@@ -89,6 +89,7 @@ public:
     ofxAudioUnitFilePlayer player;
     ofxAudioUnit lpf;
     ofxAudioUnitTap tap;
+    ofxAudioUnitSampler sampler;
     ofxAudioUnitMixer mixer;
     ofxAudioUnitOutput output;
 
