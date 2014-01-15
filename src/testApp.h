@@ -46,67 +46,54 @@ public:
     void dragEvent(ofDragInfo dragInfo);
     void gotMessage(ofMessage msg);
 
+    
+    //soundStream
     ofSoundStream ss;
     void audioIn(float * input, int bufferSize, int nChannels);
     void audioOut(float * output, int bufferSize, int nChannels);
     
+    // zach notes:
+    audioNote currentNote;
+    vector < audioNote > notes;
+    
+    // recording
+    vector<float> samples;
+    bool bAmRecording;
+    
+    
+    //pitch detector
     int numPDs;
+    int PDMethod;
     vector<char_t *> methods;
     vector<pitchDetector> pitchDetectors;
+    
+    //graphs
     vector<smoother> smoothers;
     vector<scrollingGraph> pitchGraphs, medianGraphs, velGraphs;
     vector<bool> drawPitch, drawMedian;
     vector<ofColor> graphColors;
-    
-    
-    // zach notes:
-    audioNote currentNote;
-    vector < audioNote > notes;
-
-    
     float graphWidth;
     float graphMax;
     float graphHeight;
     
-    bool startFound;
-    int currentStart;
+    //markers
     vector<marker> markers;
     bool drawMarkers;
-    
     scrollingGraph runs;
-    
-    // recording
-    bool bAmRecording;
-    bool bGoodNoteFound;
-    bool bWasRecording;
-    //AUs
-    ofxAudioUnitFilePlayer player;
-    ofxAudioUnit lpf;
-    ofxAudioUnitTap tap;
-    ofxAudioUnitOutput output;
-    ofxAudioUnitMixer mixer;
-    
-    vector<float> samples;
-    
     float threshold;
     float minDuration, maxDuration;
     float noteRun;
     
+
+    //AUs
+    ofxAudioUnitFilePlayer player;
+    ofxAudioUnit lpf;
+    ofxAudioUnitTap tap;
+    ofxAudioUnitMixer mixer;
+    ofxAudioUnitOutput output;
+
+    
     //UI
     ofxUICanvas * gui;
-    
-    int notePlayed;
-    bool notePlaying;
-    
-    bool belowThresh;
-    
-    int PDMethod;
-    
-    uint_t samplerate;
-    uint_t win_s; // window size
-    uint_t hop_s;  // hop size
-    
-    // create some vectors
-    fvec_t * in; // input buffer
     
 };

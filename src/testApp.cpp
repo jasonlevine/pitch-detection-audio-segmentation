@@ -2,12 +2,19 @@
 #include "aubio.h"
 
 
+uint_t samplerate = 44100;
+uint_t win_s = 2048; // window size
+uint_t hop_s = 1024;  // hop size
+
+// create some vectors
+fvec_t * in       = new_fvec (hop_s); // input buffer
+
+
+
+
 //--------------------------------------------------------------
 void testApp::setup(){
-    samplerate = 44100;
-    win_s = 2048; // window size
-    hop_s = 1024;  // hop size
-    fvec_t * in       = new_fvec (hop_s); // input buffer
+
     
     numPDs = 6;
     
@@ -58,9 +65,6 @@ void testApp::setup(){
     drawPitch.assign(numPDs, false);
     drawPitch[0] = true;
     drawMedian.assign(numPDs, false);
-
-    startFound = false;
-    currentStart = graphWidth - 1;
     
     //AU
     
@@ -87,9 +91,7 @@ void testApp::setup(){
     maxDuration = 50;
     drawMarkers = true;
     
-    bWasRecording = false;
     bAmRecording = false;
-    bGoodNoteFound = false;
     
     
     setupGUI();
@@ -140,14 +142,14 @@ void testApp::update(){
             currentNote.playhead = 0;
             currentNote.bPlaying = true;
             notes.push_back(currentNote);
-            cout << "note recorded - min duration = " << minDuration << endl << endl;
+//            cout << "note recorded - min duration = " << minDuration << endl << endl;
             
         }
         
         noteRun = 0;
     }
 
-    cout << noteRun << " " << bAmRecording << " vel = " << velGraphs[PDMethod].getLast() << " thresh = " << threshold << endl;
+//    cout << noteRun << " " << bAmRecording << " vel = " << velGraphs[PDMethod].getLast() << " thresh = " << threshold << endl;
     
     runs.addValue(bAmRecording);
     
@@ -158,53 +160,6 @@ void testApp::update(){
             markers[i].end--;
         }
     }
-        
-    
-        /*
-        //startFound
-        if ( velGraphs[i].valHistory[velGraphs[i].valHistory.size()-2] > threshold * graphMax
-            && velGraphs[i].valHistory[velGraphs[i].valHistory.size()-1] <= threshold * graphMax
-            && !startFound) {
-            
-//            cout << "startFound" << endl;
-            
-            startFound = true;
-            bAmRecording = true;
-            currentStart = graphWidth - 1;
-        }
-        //endfound
-        else if ( velGraphs[i].valHistory[velGraphs[i].valHistory.size()-2] <= threshold * graphMax
-                 && velGraphs[i].valHistory[velGraphs[i].valHistory.size()-1] > threshold * graphMax
-                 && startFound) {
-            
-            startFound = false;
-            bAmRecording = false;
-            
-//            cout << "endFound" << endl;
-            
-            
-            if ( (graphWidth - 1) - currentStart > minDuration ) {
-//                cout << "start : " << currentStart << " end : " << graphWidth - 1 << endl;
-                marker segment;
-                segment.start = currentStart;
-                segment.end = graphWidth - 1;
-                markers.push_back(segment);
-                
-                bGoodNoteFound = true;
-            }
-
-        }
-        
-    }
-    
-    if (startFound) currentStart--;
-    if (markers.size() > 0) {
-        for (int i = 0; i < markers.size(); i++) {
-            markers[i].start--;
-            markers[i].end--;
-        }
-    }*/
-
     
 }
 
@@ -281,13 +236,12 @@ void testApp::audioIn(float * input, int bufferSize, int nChannels){
             in->data[i] = samples[i];
             
         }
-        
+
         for (int i = 0; i < numPDs; i++) {
             pitchDetectors[i].process_pitch(in);
         }
     }
     
-
     
     if (bAmRecording){
         for (int i = 0; i < samples.size(); i++){
@@ -371,7 +325,6 @@ void testApp::guiEvent(ofxUIEventArgs &e){
 
 //--------------------------------------------------------------
 void testApp::keyPressed(int key){
-
     
     switch (key) {
         case '1':
